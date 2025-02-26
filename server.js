@@ -20,9 +20,9 @@ const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
+            callback(null, origin); //  Fix: Explicitly set the origin
         } else {
-            callback(new Error('CORS policy does not allow this request'));
+            callback(new Error('CORS policy does not allow this request'), false);
         }
     },
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -30,7 +30,12 @@ const corsOptions = {
     credentials: true
 };
 
+//  Apply CORS middleware globally
 app.use(cors(corsOptions));
+
+//  Handle preflight requests properly
+app.options('*', cors(corsOptions));
+
 
 console.log(`CORS Allowed Origin: ${process.env.CORS_ORIGIN_PROD}`);
 
