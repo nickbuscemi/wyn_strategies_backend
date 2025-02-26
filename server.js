@@ -16,28 +16,22 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
 const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
+//const allowedOrigins = process.env.CORS_ORIGIN;;
 
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, origin); //  Fix: Explicitly set the origin
-        } else {
-            callback(new Error('CORS policy does not allow this request'), false);
-        }
-    },
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+  origin: allowedOrigins, // ✅ Always set allowed origins
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 };
 
-//  Apply CORS middleware globally
+// ✅ Apply CORS middleware globally
 app.use(cors(corsOptions));
 
-//  Handle preflight requests properly
+// ✅ Handle preflight OPTIONS requests
 app.options('*', cors(corsOptions));
 
-
-console.log(`CORS Allowed Origin: ${process.env.CORS_ORIGIN_PROD}`);
+console.log(`✅ CORS Middleware Applied with Hardcoded Origins:`, allowedOrigins);
 
 
 
