@@ -15,8 +15,8 @@ const appPassword = process.env.EMAIL_PASS;
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
-const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
-//const allowedOrigins = process.env.CORS_ORIGIN;;
+//const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
+const allowedOrigins = process.env.CORS_ORIGIN_PROD;
 
 const corsOptions = {
   origin: allowedOrigins, // ✅ Always set allowed origins
