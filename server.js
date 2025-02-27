@@ -16,22 +16,8 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
 //const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
-const allowedOrigins = process.env.CORS_ORIGIN_PROD;
+app.use(cors());
 
-const corsOptions = {
-  origin: allowedOrigins, // ✅ Always set allowed origins
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-};
-
-// ✅ Apply CORS middleware globally
-app.use(cors(corsOptions));
-
-// ✅ Handle preflight OPTIONS requests
-app.options('*', cors(corsOptions));
-
-console.log(`✅ CORS Middleware Applied with Hardcoded Origins:`, allowedOrigins);
 
 
 
