@@ -30,19 +30,20 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // 🔥 Ensures cookies/auth headers are allowed
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 
-app.options('/api/contact', (req, res) => {
+app.options('*', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', 'https://www.wynstrategies.com');
-  res.setHeader('Access-Control-Allow-Credentials', 'true'); // 🔥 This is required
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(204);
+  res.sendStatus(200); // 🔥 Ensure HTTP 200 response for preflight
 });
+
 
 
 
