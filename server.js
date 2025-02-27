@@ -15,8 +15,26 @@ const appPassword = process.env.EMAIL_PASS;
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
-//const allowedOrigins = process.env.CORS_ORIGIN_PROD.split(',');
-app.use(cors());
+
+const allowedOrigins = [
+  'https://wynstrategies.com',
+  'https://www.wynstrategies.com',
+  'https://wyn-strategies.vercel.app',
+  'http://localhost:3000',
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // If you're sending cookies or authentication headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 
 
