@@ -1,4 +1,4 @@
-const express = require('express');
+{/*const express = require('express');
 const bodyParser = require('body-parser');
 const { check, validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
@@ -139,4 +139,122 @@ app.post(
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});*/}
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const { check, validationResult } = require('express-validator');
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+
+// ✅ CORS Setup
+const cors = require('cors');
+
+const allowedOrigins = [
+  'https://wynstrategies.com',
+  'https://www.wynstrategies.com',
+  'https://wyn-strategies.vercel.app',
+  'http://localhost:3000',
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ✅ Handle Preflight (OPTIONS) Requests
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.wynstrategies.com');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
 });
+
+// ✅ Middleware
+app.use(bodyParser.json());
+
+// ✅ Load email template
+const confirmationEmailHtml = fs.readFileSync(path.join(__dirname, 'emails', 'email2.html'), 'utf8');
+
+// ✅ Rate limiting for contact form
+const rateLimit = require('express-rate-limit');
+const contactFormLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: { msg: 'Too many requests from this IP, please try again later.' }
+});
+
+app.use('/api/contact', contactFormLimiter);
+
+// ✅ Contact form route
+app.post(
+  '/api/contact',
+  [
+    check('name').trim().escape().notEmpty().withMessage('Name is required.'),
+    check('email').isEmail().normalizeEmail().withMessage('Valid email is required.'),
+    check('phone').trim().escape().notEmpty().withMessage('Phone is required.'),
+    check('subject').trim().escape().notEmpty().withMessage('Subject is required.'),
+    check('message').trim().escape().notEmpty().withMessage('Message is required.')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, email, phone, subject, message } = req.body;
+    const firstName = name.split(' ')[0];
+
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      // ✅ Send email to admin
+      const teamMailOptions = {
+        from: email,
+        to: process.env.EMAIL_USER,
+        subject: `New Contact Form Submission: ${subject}`,
+        text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nMessage: ${message}`
+      };
+
+      await transporter.sendMail(teamMailOptions);
+
+      // ✅ Send confirmation email to user
+      const userMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: `Thank you for contacting us, ${firstName}!`,
+        html: confirmationEmailHtml.replace('{(name)}', firstName),
+      };
+
+      await transporter.sendMail(userMailOptions);
+
+      return res.status(200).json({ msg: 'Form submitted successfully!' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return res.status(500).json({ msg: 'Internal server error' });
+    }
+  }
+);
+
+// ✅ Export Express app for Vercel
+module.exports = app;
+
