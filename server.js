@@ -121,7 +121,7 @@ Message: ${message}
       const userEmailResult = await resend.emails.send({
         from: gmail,
         to: email,
-        subject: `Thank you for reaching out to Wyn Strategies.`,
+        subject: `Thank you for contacting Wyn Strategies.`,
         html: personalizedHtml,
       });
 
