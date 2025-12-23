@@ -87,6 +87,14 @@ app.post(
     const firstName = name.split(' ')[0];
 
     try {
+      // Log environment variables for debugging
+      console.log('=== EMAIL SEND ATTEMPT ===');
+      console.log('From (gmail):', gmail);
+      console.log('To (teamInbox):', teamInbox);
+      console.log('User email:', email);
+      console.log('Resend API Key exists:', !!process.env.RESEND_API_KEY);
+      console.log('Resend API Key prefix:', process.env.RESEND_API_KEY?.substring(0, 10));
+
       // 5. Send an email to the team (contact form submission)
       // Keep same content as your nodemailer text block
       const teamText = `
@@ -96,7 +104,7 @@ Phone: ${phone}
 Message: ${message}
       `.trim();
 
-      await resend.emails.send({
+      const teamEmailResult = await resend.emails.send({
         from: gmail, // must be a verified sender in Resend (e.g. "Wyn Strategies <contact@wynstrategies.com>")
         to: teamInbox, // where submissions should go
         subject: `New Contact Form Submission: ${subject}`,
@@ -105,21 +113,29 @@ Message: ${message}
         replyTo: email,
       });
 
+      console.log('Team email result:', JSON.stringify(teamEmailResult, null, 2));
+
       // 6. Send a confirmation email to the user
       const personalizedHtml = confirmationEmailHtml.replace('{(name)}', firstName);
 
-      await resend.emails.send({
+      const userEmailResult = await resend.emails.send({
         from: gmail,
         to: email,
         subject: `Thank you for reaching out to Wyn Strategies.`,
         html: personalizedHtml,
       });
 
+      console.log('User email result:', JSON.stringify(userEmailResult, null, 2));
+
       // 7. Respond to the client
       return res.status(200).json({ msg: 'Form submitted successfully!' });
     } catch (error) {
-      console.error('Error sending email:', error);
-      return res.status(500).json({ msg: 'Internal server error' });
+      console.error('=== EMAIL SEND ERROR ===');
+      console.error('Error type:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Full error:', JSON.stringify(error, null, 2));
+      console.error('Stack trace:', error.stack);
+      return res.status(500).json({ msg: 'Internal server error', error: error.message });
     }
   }
 );
