@@ -46,15 +46,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.options('*', (req, res) => {
-  // Keeping your existing preflight behavior
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.wynstrategies.com');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(200);
-});
-
 // MIDDLEWARE
 app.use(bodyParser.json());
 
