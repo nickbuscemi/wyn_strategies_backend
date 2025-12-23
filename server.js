@@ -13,6 +13,9 @@ const { Resend } = require('resend');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Trust proxy - required for rate limiting on Vercel/behind proxies
+app.set('trust proxy', 1);
+
 // Keep your existing variable name semantics
 // (EMAIL_USER is now your verified "from" sender in Resend, not a Gmail login)
 const gmail = process.env.EMAIL_USER;
